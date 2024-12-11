@@ -1,0 +1,12 @@
+name: Fights
+version: '${version}'
+main: ru.shirk.fights.Fights
+author: "shirkqqe"
+website: "https://github.com/shirkqqe"
+api-version: '1.16'
+depend:
+  - AntiRelog
+
+commands:
+  pvp:
+    description: "Usage: /pvp [list]"

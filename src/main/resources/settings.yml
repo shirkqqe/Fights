@@ -1,0 +1,24 @@
+storage:
+  type: MySQL
+  maxConnections: 2
+  baseName: "fights"
+  host: localhost
+  port: 3306
+  user: "root"
+  password: "" # <- here you database password
+location:
+  world: world
+  radius: 2500
+  blockList:
+    - AIR
+    - WATER
+settings:
+  startDistance: 30
+  maxDistance: 100
+messages:
+  start: "&4▶&f Вы телепортировались к игроку &4%player%!&f Да начнется битва!"
+  end: "&4▶&f О Господи! &4%killer% &fразорвал в клочья &4%player%! &fКровавая битва окончалась победой &6%killer%"
+  leave: "&4▶&f Игрок &4%leaver% &fструсил перед &4%player% &fи покинул битву."
+  enterQueue: "&4▶&f Игрок &4%sender%&f ищет соперника &4(/pvp list)"
+  enterQueueError: "&4▶&f Вступить в поединок можно только в настоящих &fдоспехах! (нужна &bалмазная &fили &6незеритовая &fброня!)"
+  quitQueue: "&a▶&f Вы &aотменили поиск поединка&f."
