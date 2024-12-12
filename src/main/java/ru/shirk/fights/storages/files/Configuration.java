@@ -1,5 +1,6 @@
 package ru.shirk.fights.storages.files;
 
+import lombok.NonNull;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Configuration {
 
@@ -76,7 +79,7 @@ public class Configuration {
             this.p.getLogger().warning("No such language caption found: " + name);
             caption = "&c[No language caption found]";
         }
-        return ChatColor.translateAlternateColorCodes('&', caption);
+        return colorize(caption);
     }
 
     public int ch(String name) {
@@ -86,7 +89,7 @@ public class Configuration {
     public List<String> cl(String name) {
         List<String> captionlist = new ArrayList<>();
         for (String s : getFile().getStringList(name)) {
-            captionlist.add(ChatColor.translateAlternateColorCodes('&', s));
+            captionlist.add(colorize(s));
         }
         if (getFile().getStringList(name) == null) {
             this.p.getLogger().warning("No such language caption found: " + name);
@@ -97,34 +100,51 @@ public class Configuration {
 
     public Material m(String name) {
         final Material material = Material.getMaterial(c(name));
-        if(material == null) {
+        if (material == null) {
             Bukkit.getLogger().warning("No such material found: " + name);
             return Material.STONE;
-        } else {
-            return material;
         }
+        return material;
     }
 
     public World w(String name) {
         final World world = Bukkit.getWorld(c(name));
-        if(world == null) {
+        if (world == null) {
             Bukkit.getLogger().warning("No such world found: " + name);
             return null;
-        } else {
-            return world;
         }
+        return world;
     }
 
     public List<Material> ml(String name) {
         final List<Material> materials = new ArrayList<>();
-        for(String s : cl(name)) {
+        for (String s : cl(name)) {
             Material material = Material.getMaterial(s);
-            if(material == null) {
+            if (material == null) {
                 Bukkit.getLogger().warning("No such material found: " + name);
                 continue;
             }
             materials.add(material);
         }
         return materials;
+    }
+
+    public @NonNull String colorize(String from) {
+        Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
+
+        for (Matcher matcher = pattern.matcher(from); matcher.find(); matcher = pattern.matcher(from)) {
+            String hexCode = from.substring(matcher.start(), matcher.end());
+            String replaceSharp = hexCode.replace('#', 'x');
+            char[] ch = replaceSharp.toCharArray();
+            StringBuilder builder = new StringBuilder();
+
+            for (char c : ch) {
+                builder.append("&").append(c);
+            }
+
+            from = from.replace(hexCode, builder.toString());
+        }
+
+        return ChatColor.translateAlternateColorCodes('&', from);
     }
 }
