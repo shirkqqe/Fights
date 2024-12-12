@@ -1,6 +1,7 @@
 package ru.shirk.fights.menus;
 
 import lombok.Getter;
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -103,10 +104,11 @@ public class QueueListMenu implements Listener {
 
         inventory.clear();
 
-        final QueueUser[] queueUsers = Fights.getQueueManager().getQueue().toArray(new QueueUser[0]);
+        final Map<QueueUser, String> queue = Fights.getDatabaseStorage().getQueue();
+        final QueueUser[] queueUsers = queue.keySet().toArray(new QueueUser[0]);
         for (int i = startIndex; i < queueUsers.length && slot < 44; i++) {
-            final QueueUser queueUser = queueUsers[i];
-            inventory.setItem(slot, newQueueUserItem(queueUser));
+            final String server = queue.get(queueUsers[0]);
+            inventory.setItem(slot, newQueueUserItem(queueUsers[0], server));
             slot++;
         }
 
@@ -160,10 +162,19 @@ public class QueueListMenu implements Listener {
         } else {
             final ItemStack itemStack = event.getCurrentItem();
             if (itemStack == null || itemStack.getItemMeta() == null) return;
-            final String username = itemStack.getItemMeta().
-                    getPersistentDataContainer().get(NamespacedKey.minecraft("username"), PersistentDataType.STRING);
-            if (username == null || username.equalsIgnoreCase(p.getName())) return;
+            final String username = itemStack.getItemMeta()
+                    .getPersistentDataContainer().get(NamespacedKey.minecraft("username"),
+                            PersistentDataType.STRING);
+            final String serverName = itemStack.getItemMeta()
+                    .getPersistentDataContainer().get(NamespacedKey.minecraft("server"),
+                            PersistentDataType.STRING);
+            if (username == null || username.equalsIgnoreCase(p.getName()) || serverName == null) return;
             p.closeInventory();
+            if (!serverName.equalsIgnoreCase(Fights.getCurrentServer())) {
+                p.sendMessage(Fights.getConfigurationManager().getConfig("settings.yml")
+                        .c("messages.changeServer"));
+                return;
+            }
             if (!Utils.hasArmor(p)) {
                 p.sendMessage(Fights.getConfigurationManager().getConfig("settings.yml")
                         .c("messages.enterQueueError"));
@@ -197,7 +208,7 @@ public class QueueListMenu implements Listener {
         }
     }
 
-    private ItemStack newQueueUserItem(final QueueUser queueUser) {
+    private ItemStack newQueueUserItem(@NonNull QueueUser queueUser, @NonNull String serverName) {
         final ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
         final ItemMeta itemMeta = itemStack.getItemMeta();
         assert itemMeta != null;
@@ -205,6 +216,11 @@ public class QueueListMenu implements Listener {
                 NamespacedKey.minecraft("username"),
                 PersistentDataType.STRING,
                 queueUser.name()
+        );
+        itemMeta.getPersistentDataContainer().set(
+                NamespacedKey.minecraft("server"),
+                PersistentDataType.STRING,
+                serverName
         );
         itemMeta.setDisplayName(" §6● §fПоединок с: §6" + queueUser.name());
         itemMeta.setLore(List.of(
@@ -214,7 +230,7 @@ public class QueueListMenu implements Listener {
                 "§r    §4Поражения",
                 "§r    §4§l▎§f Всего: §4" + queueUser.losses(),
                 " ",
-                " §b●§f Поединок состоится на §bКлассик-1",
+                " §b●§f Поединок состоится на §b" + serverName,
                 " ",
                 " §6▶§f Левый клик - §6начать поединок",
                 " §b▶§f Шифт + Правый клик - §bинвентарь игрока"

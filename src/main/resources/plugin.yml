@@ -4,7 +4,7 @@ main: ru.shirk.fights.Fights
 author: "shirkqqe"
 website: "https://github.com/shirkqqe"
 api-version: '1.16'
-depend:
+softdepend:
   - AntiRelog
 
 commands:

@@ -1,6 +1,7 @@
 package ru.shirk.fights;
 
 import lombok.Getter;
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.shirk.fights.battles.BattleManager;
@@ -11,6 +12,7 @@ import ru.shirk.fights.menus.QueueMenu;
 import ru.shirk.fights.queue.QueueManager;
 import ru.shirk.fights.storages.database.DatabaseStorage;
 import ru.shirk.fights.storages.files.ConfigurationManager;
+import ru.shirk.fights.storages.redis.RedisManager;
 
 import java.io.File;
 import java.util.Objects;
@@ -31,6 +33,7 @@ public final class Fights extends JavaPlugin {
     private static QueueMenu queueMenu;
     @Getter
     private static QueueListMenu queueListMenu;
+    private RedisManager redisManager;
 
     @Override
     public void onEnable() {
@@ -41,7 +44,8 @@ public final class Fights extends JavaPlugin {
         instance = this;
         loadConfigs();
         databaseStorage = new DatabaseStorage();
-        queueManager = new QueueManager();
+        redisManager = new RedisManager();
+        queueManager = new QueueManager(databaseStorage, redisManager);
         Objects.requireNonNull(this.getCommand("pvp")).setExecutor(new Commands());
         Objects.requireNonNull(this.getCommand("pvp")).setTabCompleter(new Commands());
         this.getServer().getPluginManager().registerEvents(new BukkitEvents(), this);
@@ -51,6 +55,7 @@ public final class Fights extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        redisManager.unload();
         instance = null;
     }
 
@@ -62,5 +67,9 @@ public final class Fights extends JavaPlugin {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static @NonNull String getCurrentServer() {
+        return configurationManager.getConfig("settings.yml").c("settings.serverName");
     }
 }

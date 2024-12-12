@@ -1,5 +1,6 @@
 package ru.shirk.fights.menus;
 
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -27,6 +28,7 @@ public class QueueMenu implements Listener {
     private final ItemStack enterQueue = new ItemStack(Material.LIME_CONCRETE);
     private final ItemStack exitQueue = new ItemStack(Material.RED_CONCRETE);
     private final ItemStack info = new ItemStack(Material.NETHER_STAR);
+    private final JavaPlugin plugin;
 
     {
         ItemMeta itemMeta = enterQueue.getItemMeta();
@@ -72,9 +74,9 @@ public class QueueMenu implements Listener {
         info.setItemMeta(itemMeta);
     }
 
-    public QueueMenu(final JavaPlugin plugin) {
+    public QueueMenu(@NonNull JavaPlugin plugin) {
+        this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::updateAll, 20, 20);
     }
 
     public void open(final Player player) {
@@ -100,13 +102,10 @@ public class QueueMenu implements Listener {
     }
 
     public void build(final Player player, final Inventory inventory) {
-        if (Fights.getQueueManager().getQueueUser(player.getName()) == null) {
-            inventory.setItem(13, enterQueue);
-        } else {
-            inventory.setItem(13, exitQueue);
-        }
-        inventory.setItem(18, info);
-
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            inventory.setItem(13, Fights.getQueueManager().isInQueue(player.getName()) ? exitQueue : enterQueue);
+            inventory.setItem(18, info);
+        });
         player.updateInventory();
     }
 

@@ -130,6 +130,11 @@ public class DatabaseManager {
                     "  `wins` INT DEFAULT '0'," +
                     "  `losses` INT DEFAULT '0'" +
                     ");");
+
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS `queue` (" +
+                    "  `name` VARCHAR(20) NOT NULL PRIMARY KEY," +
+                    "  `server` VARCHAR(50) NOT NULL" +
+                    ");");
         } catch (SQLException e) {
             throw new RuntimeException(e.getMessage(), e);
         } finally {
