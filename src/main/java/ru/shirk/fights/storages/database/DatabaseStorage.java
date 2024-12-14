@@ -5,10 +5,7 @@ import ru.shirk.fights.Fights;
 import ru.shirk.fights.queue.QueueUser;
 import ru.shirk.fights.storages.files.ConfigurationManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashMap;
 
 public class DatabaseStorage {
@@ -107,6 +104,23 @@ public class DatabaseStorage {
             return preparedStatement.executeQuery().next();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            mySqlManager.returnConnection(connection);
+        }
+    }
+
+    public void clearQueue() {
+        final Connection connection = mySqlManager.getConnection();
+        try {
+            final PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM `" +
+                    mySqlManager.getBaseName() + "`.`queue` WHERE `server` = ?;");
+
+            preparedStatement.setString(1, Fights.getCurrentServer());
+
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
         } finally {
             mySqlManager.returnConnection(connection);
         }

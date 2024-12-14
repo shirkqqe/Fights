@@ -55,6 +55,7 @@ public final class Fights extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        databaseStorage.clearQueue();
         redisManager.unload();
         instance = null;
     }
